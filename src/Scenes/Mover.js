@@ -11,8 +11,10 @@ class Movement extends Phaser.Scene {
 
     preload() {
         this.load.setPath("./assets/");
-        this.load.image("playerBody", "character_roundYellow.png");
-        this.load.image("sword", "item_sword.png");
+        this.load.image("playerBody", "alienYellow_badge1.png");
+        this.load.image("sword", "flame.png");
+        this.load.audio("playerHit", "impactBell_heavy_003.ogg");
+        this.load.audio("playerShoot", "impactPlank_medium_002.ogg");
     }
 
     create() {
@@ -22,6 +24,7 @@ class Movement extends Phaser.Scene {
         for (let i=0; i < this.maxBullets; i++) {
             // create a sprite which is offscreen and invisible
             my.sprite.bullet.push(this.add.sprite(-100, -100, "sword"));
+            my.sprite.bullet[i].setScale(0.5);
             my.sprite.bullet[i].visible = false;
         }
 
@@ -29,7 +32,7 @@ class Movement extends Phaser.Scene {
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-        this.playerSpeed = 6;
+        this.playerSpeed = 10;
         this.bulletSpeed = 25;
     }
     
