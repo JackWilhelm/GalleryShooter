@@ -3,7 +3,8 @@ class Movement extends Phaser.Scene {
         super("moveScene");
         this.my = {sprite: {}};
 
-        this.my.sprite.bullet = [];   
+        this.my.sprite.bullet = [];
+        this.my.sprite.frogs = [];  
         this.maxBullets = 10;           
         this.bulletCooldown = 15;        
         this.bulletCooldownCounter = 0;
@@ -37,6 +38,12 @@ class Movement extends Phaser.Scene {
             my.sprite.bullet[i].visible = false;
         }
 
+        for (let j = 0; j < 2; j++) {
+            my.sprite.frogs.push(this.add.sprite(-100, 100, "frog"));
+            my.sprite.frogs[j].setScale(0.5);
+            my.sprite.frogs[j].visible = false;
+        }
+
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -50,15 +57,43 @@ class Movement extends Phaser.Scene {
         this.enemyHit = this.sound.add("enemyHit");
         this.finishJingle = this.sound.add("finishJingle");
 
-        this.level = 1;
-        this.startRound = true;
+        this.startRound = true;       
+        this.frogHopTimer = 0;
     }
     
     update() {
         let my = this.my;
         this.bulletCooldownCounter--;
+        this.frogHopTimer++;
 
-        
+        if (this.startRound == true) {
+            this.startRound = false;
+            this.frogHopTimers = 0;
+            this.frogMode = [];
+            my.sprite.frogs.push(this.add.sprite(-100, 100, "frog"));
+            my.sprite.frogs[my.sprite.frogs.length - 1].visible = false;
+            my.sprite.frogs[my.sprite.frogs.length - 1].setScale(0.5);
+            for (let i = 0; i < my.sprite.frogs.length; i++) {
+                my.sprite.frogs[i].visible = true;
+                if (Math.round(Math.random()) == 1) {
+                    my.sprite.frogs[i].x = game.config.width - 100;
+                    this.frogMode[i] = -1;
+                } else {
+                    my.sprite.frogs[i].x = 100;
+                    this.frogMode[i] = 1;
+                }
+                my.sprite.frogs[i].y = (Math.random() * (game.config.height - 400)) + 50;
+            }
+        }
+
+        for (let j = 0; j < my.sprite.frogs.length; j++) {
+            if (my.sprite.frogs[j].visible) {
+                my.sprite.frogs[j].x -= Math.max(Math.abs(5 * Math.abs(Math.sin(this.frogHopTimer/10)/2)) - 1, 0) * this.frogMode[j] * 5;
+                if (my.sprite.frogs[j].x < 100 || my.sprite.frogs[j].x > game.config.width - 100) {
+                    this.frogMode[j] *= -1;
+                }
+            }
+        }
 
         if (this.aKey.isDown) {
             if (my.sprite.body.x > (my.sprite.body.displayWidth/2)) {
