@@ -94,6 +94,14 @@ class Movement extends Phaser.Scene {
                     this.frogMode[i] = 1;
                 }
                 my.sprite.frogs[i].y = (Math.random() * (game.config.height - 400)) + 50;
+                for(let frog of my.sprite.frogs) {
+                    if (frog.visible == true && frog != my.sprite.frogs[i]) {
+                        if (this.collides(frog, my.sprite.frogs[i])) {
+                            i--;
+                            break;
+                        }
+                    }
+                }
             }
 
             this.snakeChangeTimer = 0;
@@ -113,6 +121,15 @@ class Movement extends Phaser.Scene {
                 } else {
                     my.sprite.snakes[i].x = Math.random() * ((game.config.width - 100) - 100) + 100;
                     my.sprite.snakes[i].y = 100
+                }
+
+                for (let snake of my.sprite.snakes) {
+                    if (snake.visible == true && snake != my.sprite.snakes[i]) {
+                        if (this.collides(snake, my.sprite.snakes[i])) {
+                            i--;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -196,10 +213,31 @@ class Movement extends Phaser.Scene {
             if (bullet.visible) {
                 bullet.y -= this.bulletSpeed;
             }
+            for (let frog of my.sprite.frogs) {
+                if (frog.visible == true) {
+                    if (this.collides(frog, bullet)) {
+                        bullet.y = -100;
+                        frog.visible = false;
+                        frog.x = -100;
+                    }
+                } 
+            }
+            
             if (bullet.y < -(bullet.displayHeight/2)) {
                 bullet.visible = false;
             }
+            
         }
 
+    }
+
+    collides(a, b) {
+        if (Math.abs(a.x - b.x) > (a.displayWidth/2 + b.displayWidth/2)) {
+            return false;
+        }
+        if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/2)) {
+            return false;
+        }
+        return true;
     }
 }
