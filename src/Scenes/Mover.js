@@ -19,6 +19,7 @@ class Movement extends Phaser.Scene {
         this.gameOver = false;
         this.playerLives = 3;
         this.my.sprite.lives = [];
+        this.playerScore = 0;
     }
 
     preload() {
@@ -49,7 +50,7 @@ class Movement extends Phaser.Scene {
             my.sprite.bullet[i].visible = false;
         }
 
-        for (let i=0; i < 20; i++) {
+        for (let i=0; i < 50; i++) {
             // create a sprite which is offscreen and invisible
             my.sprite.poisonSpit.push(this.add.sprite(-100, -100, "poison"));
             my.sprite.poisonSpit[i].setScale(0.5);
@@ -93,6 +94,8 @@ class Movement extends Phaser.Scene {
         this.snakeChangeTimer = 0;
 
         document.getElementById('description').innerHTML = '<h2>Snakes And Frogs</h2><br>A: left // D: right // Space: shoot // S: Next Scene // R: Restart // N: Next Stage'
+
+        this.score = this.add.text(game.config.width/2, 100, this.playerScore, 'Default');
     }
     
     update() {
@@ -124,14 +127,16 @@ class Movement extends Phaser.Scene {
                         this.frogMode[i] = 1;
                     }
                     my.sprite.frogs[i].y = (Math.random() * (game.config.height - 400)) + 50;
-                    for(let frog of my.sprite.frogs) {
-                        if (frog.visible == true && frog != my.sprite.frogs[i]) {
-                            if (this.collides(frog, my.sprite.frogs[i])) {
-                                i--;
-                                break;
+                    if (my.sprite.frogs.length < 8) {
+                        for(let frog of my.sprite.frogs) {
+                            if (frog.visible == true && frog != my.sprite.frogs[i]) {
+                                if (this.collides(frog, my.sprite.frogs[i])) {
+                                    i--;
+                                    break;
+                                }
                             }
                         }
-                    }
+                    }      
                 }
     
                 for (let i = 0; i < my.sprite.frogs.length; i++) {
@@ -157,15 +162,17 @@ class Movement extends Phaser.Scene {
                         my.sprite.snakes[i].x = Math.random() * ((game.config.width - 100) - 100) + 100;
                         my.sprite.snakes[i].y = 100
                     }
-    
-                    for (let snake of my.sprite.snakes) {
-                        if (snake.visible == true && snake != my.sprite.snakes[i]) {
-                            if (this.collides(snake, my.sprite.snakes[i])) {
-                                i--;
-                                break;
+
+                    if (my.sprite.snakes.length < 10) {
+                        for (let snake of my.sprite.snakes) {
+                            if (snake.visible == true && snake != my.sprite.snakes[i]) {
+                                if (this.collides(snake, my.sprite.snakes[i])) {
+                                    i--;
+                                    break;
+                                }
                             }
                         }
-                    }
+                    } 
                 }
     
                 for (let i = 0; i < my.sprite.snakes.length; i++) {
@@ -260,6 +267,8 @@ class Movement extends Phaser.Scene {
                             frog.visible = false;
                             frog.x = -100;
                             this.enemyHit.play();
+                            this.playerScore += 25;
+                            this.score.setText(this.playerScore);
                         }
                     } 
                 }
@@ -270,6 +279,8 @@ class Movement extends Phaser.Scene {
                             snake.visible = false;
                             snake.x = -100;
                             this.enemyHit.play();
+                            this.playerScore += 50;
+                            this.score.setText(this.playerScore);
                         }
                     } 
                 }
@@ -344,6 +355,8 @@ class Movement extends Phaser.Scene {
             if (this.frogsBeaten && this.snakesBeaten && !this.gameOver) {
                 this.finishJingle.play();
                 this.gameOver = true;
+                this.playerScore += 300;
+                this.score.setText(this.playerScore);
             }
     
             if (this.playerLives <= 0 && !this.gameOver) {
@@ -365,6 +378,8 @@ class Movement extends Phaser.Scene {
                 while (this.my.sprite.frogs.length > 2) {
                     this.my.sprite.frogs.pop().destroy(true);;
                 }
+                this.playerScore = 0;
+                this.score.setText(this.playerScore);
             }
             if (this.nKey.isDown && this.frogsBeaten && this.snakesBeaten) {
                 this.gameOver = false;
