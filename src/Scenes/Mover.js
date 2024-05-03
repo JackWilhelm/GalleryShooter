@@ -91,6 +91,8 @@ class Movement extends Phaser.Scene {
         this.startRound = true;       
         this.frogHopTimer = 0;
         this.snakeChangeTimer = 0;
+
+        document.getElementById('description').innerHTML = '<h2>Snakes And Frogs</h2><br>A: left // D: right // Space: shoot // S: Next Scene // R: Restart // N: Next Stage'
     }
     
     update() {
