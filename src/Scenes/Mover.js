@@ -17,6 +17,8 @@ class Movement extends Phaser.Scene {
         this.frogsBeaten = false;
         this.snakesBeaten = false;
         this.gameOver = false;
+        this.playerLives = 3;
+        this.my.sprite.lives = [];
     }
 
     preload() {
@@ -66,9 +68,15 @@ class Movement extends Phaser.Scene {
             my.sprite.snakes[j].visible = false;
         }
 
+        for (let k = 0; k < this.playerLives; k++) {
+            my.sprite.lives.push(this.add.sprite((k+0.75) * 75, game.config.height - 50, "lives"));
+            my.sprite.lives[k].setScale(0.75);
+        }
+
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
         this.playerSpeed = 10;
         this.bulletSpeed = 25;
@@ -85,249 +93,271 @@ class Movement extends Phaser.Scene {
     }
     
     update() {
-        let my = this.my;
-        this.bulletCooldownCounter--;
-        this.frogHopTimer++;
-        this.snakeChangeTimer++;
+        if (!this.gameOver){
+            let my = this.my;
+            this.bulletCooldownCounter--;
+            this.frogHopTimer++;
+            this.snakeChangeTimer++;
 
-        if (this.startRound == true) {
-            this.startRound = false;
-
-            this.frogHopTimer = 0;
-            this.frogMode = [];
-            my.sprite.frogs.push(this.add.sprite(-100, 100, "frog"));
-            my.sprite.frogs[my.sprite.frogs.length - 1].visible = false;
-            my.sprite.frogs[my.sprite.frogs.length - 1].setScale(0.5);
-            for (let i = 0; i < my.sprite.frogs.length; i++) {
-                my.sprite.frogs[i].visible = true;
-                if (Math.round(Math.random()) == 1) {
-                    my.sprite.frogs[i].x = game.config.width - 100;
-                    this.frogMode[i] = -1;
-                } else {
-                    my.sprite.frogs[i].x = 100;
-                    this.frogMode[i] = 1;
-                }
-                my.sprite.frogs[i].y = (Math.random() * (game.config.height - 400)) + 50;
-                for(let frog of my.sprite.frogs) {
-                    if (frog.visible == true && frog != my.sprite.frogs[i]) {
-                        if (this.collides(frog, my.sprite.frogs[i])) {
-                            i--;
-                            break;
-                        }
-                    }
-                }
+            for (let k = 0; k < this.playerLives; k++) {
+                my.sprite.lives[k].visible = true;
             }
-
-            for (let i = 0; i < my.sprite.frogs.length; i++) {
-                this.frogCharges[i] = Math.round(Math.random() * this.enemyFireRate);
-            }
-
-
-            this.snakeChangeTimer = 0;
-            this.snakeDirection = [];
-            my.sprite.snakes.push(this.add.sprite(-100, 100, "snake"));
-            my.sprite.snakes[my.sprite.snakes.length - 1].visible = false;
-            my.sprite.snakes[my.sprite.snakes.length - 1].setScale(0.5);
-            for (let i = 0; i < my.sprite.snakes.length; i++) {
-                my.sprite.snakes[i].visible = true;
-                this.snakeDirection[i] = this.directions[Math.round(Math.random()*2)+1];
-                if (this.snakeDirection[i] == "left") {
-                    my.sprite.snakes[i].x = game.config.width - 100;
-                    my.sprite.snakes[i].y = (Math.random() * (game.config.height - 400)) + 100;
-                } else if (this.snakeDirection[i] == "right") {
-                    my.sprite.snakes[i].x = 100;
-                    my.sprite.snakes[i].y = (Math.random() * (game.config.height - 400)) + 100;
-                } else {
-                    my.sprite.snakes[i].x = Math.random() * ((game.config.width - 100) - 100) + 100;
-                    my.sprite.snakes[i].y = 100
-                }
-
-                for (let snake of my.sprite.snakes) {
-                    if (snake.visible == true && snake != my.sprite.snakes[i]) {
-                        if (this.collides(snake, my.sprite.snakes[i])) {
-                            i--;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            for (let i = 0; i < my.sprite.snakes.length; i++) {
-                this.snakeCharges[i] = Math.round(Math.random() * this.enemyFireRate);
-            }
-            
-        }
-
-        for (let j = 0; j < my.sprite.frogs.length; j++) {
-            if (my.sprite.frogs[j].visible) {
-                my.sprite.frogs[j].x -= Math.max(Math.abs(5 * Math.abs(Math.sin(this.frogHopTimer/10)/2)) - 1, 0) * this.frogMode[j] * 5;
-                if (my.sprite.frogs[j].x < 100 || my.sprite.frogs[j].x > game.config.width - 100) {
-                    this.frogMode[j] *= -1;
-                }
-            }
-        }
-
-        for (let j = 0; j < my.sprite.snakes.length; j++) {
-            if (my.sprite.snakes[j].visible) {
-                if (this.snakeDirection[j] == "up" && my.sprite.snakes[j].y < 100) {
-                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
-                    j--;
-                    continue;
-                } else if (this.snakeDirection[j] == "left" && my.sprite.snakes[j].x < 100) {
-                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
-                    j--;
-                    continue;
-                } else if (this.snakeDirection[j] == "right" && my.sprite.snakes[j].x > game.config.width - 100) {
-                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
-                    j--;
-                    continue;
-                } else if (this.snakeDirection[j] == "down" && my.sprite.snakes[j].y > game.config.height - 300) {
-                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
-                    j--;
-                    continue;
-                } else {
-                    if (this.snakeDirection[j] == "up") {
-                        my.sprite.snakes[j].y -= 5;
-                    } else if (this.snakeDirection[j] == "down") {
-                        my.sprite.snakes[j].y += 5;
-                    } else if (this.snakeDirection[j] == "left") {
-                        my.sprite.snakes[j].x -= 5;
+    
+            if (this.startRound == true) {
+                this.startRound = false;
+    
+                this.frogHopTimer = 0;
+                this.frogMode = [];
+                my.sprite.frogs.push(this.add.sprite(-100, 100, "frog"));
+                my.sprite.frogs[my.sprite.frogs.length - 1].visible = false;
+                my.sprite.frogs[my.sprite.frogs.length - 1].setScale(0.5);
+                for (let i = 0; i < my.sprite.frogs.length; i++) {
+                    my.sprite.frogs[i].visible = true;
+                    if (Math.round(Math.random()) == 1) {
+                        my.sprite.frogs[i].x = game.config.width - 100;
+                        this.frogMode[i] = -1;
                     } else {
-                        my.sprite.snakes[j].x += 5;
+                        my.sprite.frogs[i].x = 100;
+                        this.frogMode[i] = 1;
+                    }
+                    my.sprite.frogs[i].y = (Math.random() * (game.config.height - 400)) + 50;
+                    for(let frog of my.sprite.frogs) {
+                        if (frog.visible == true && frog != my.sprite.frogs[i]) {
+                            if (this.collides(frog, my.sprite.frogs[i])) {
+                                i--;
+                                break;
+                            }
+                        }
+                    }
+                }
+    
+                for (let i = 0; i < my.sprite.frogs.length; i++) {
+                    this.frogCharges[i] = Math.round(Math.random() * this.enemyFireRate);
+                }
+    
+    
+                this.snakeChangeTimer = 0;
+                this.snakeDirection = [];
+                my.sprite.snakes.push(this.add.sprite(-100, 100, "snake"));
+                my.sprite.snakes[my.sprite.snakes.length - 1].visible = false;
+                my.sprite.snakes[my.sprite.snakes.length - 1].setScale(0.5);
+                for (let i = 0; i < my.sprite.snakes.length; i++) {
+                    my.sprite.snakes[i].visible = true;
+                    this.snakeDirection[i] = this.directions[Math.round(Math.random()*2)+1];
+                    if (this.snakeDirection[i] == "left") {
+                        my.sprite.snakes[i].x = game.config.width - 100;
+                        my.sprite.snakes[i].y = (Math.random() * (game.config.height - 400)) + 100;
+                    } else if (this.snakeDirection[i] == "right") {
+                        my.sprite.snakes[i].x = 100;
+                        my.sprite.snakes[i].y = (Math.random() * (game.config.height - 400)) + 100;
+                    } else {
+                        my.sprite.snakes[i].x = Math.random() * ((game.config.width - 100) - 100) + 100;
+                        my.sprite.snakes[i].y = 100
+                    }
+    
+                    for (let snake of my.sprite.snakes) {
+                        if (snake.visible == true && snake != my.sprite.snakes[i]) {
+                            if (this.collides(snake, my.sprite.snakes[i])) {
+                                i--;
+                                break;
+                            }
+                        }
+                    }
+                }
+    
+                for (let i = 0; i < my.sprite.snakes.length; i++) {
+                    this.snakeCharges[i] = Math.round(Math.random() * this.enemyFireRate);
+                }
+                
+            }
+    
+            for (let j = 0; j < my.sprite.frogs.length; j++) {
+                if (my.sprite.frogs[j].visible) {
+                    my.sprite.frogs[j].x -= Math.max(Math.abs(5 * Math.abs(Math.sin(this.frogHopTimer/10)/2)) - 1, 0) * this.frogMode[j] * 5;
+                    if (my.sprite.frogs[j].x < 100 || my.sprite.frogs[j].x > game.config.width - 100) {
+                        this.frogMode[j] *= -1;
                     }
                 }
             }
-        }
-
-        if (this.snakeChangeTimer%25 == 0) {
+    
             for (let j = 0; j < my.sprite.snakes.length; j++) {
-                this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)]; 
-            }
-        }
-
-        if (this.aKey.isDown) {
-            if (my.sprite.body.x > (my.sprite.body.displayWidth/2)) {
-                my.sprite.body.x -= this.playerSpeed;
-            }
-        }
-
-        if (this.dKey.isDown) {
-            if (my.sprite.body.x < (game.config.width - (my.sprite.body.displayWidth/2))) {
-                my.sprite.body.x += this.playerSpeed;
-            }
-        }
-
-        if (this.spaceKey.isDown) {
-            if (this.bulletCooldownCounter < 0) {
-                for (let bullet of my.sprite.bullet) {
-                    if (!bullet.visible) {
-                        bullet.x = my.sprite.body.x;
-                        bullet.y = my.sprite.body.y - (bullet.displayHeight/2);
-                        bullet.visible = true;
-                        this.bulletCooldownCounter = this.bulletCooldown;
-                        this.playerShoot.play();
-                        break;
+                if (my.sprite.snakes[j].visible) {
+                    if (this.snakeDirection[j] == "up" && my.sprite.snakes[j].y < 100) {
+                        this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                        j--;
+                        continue;
+                    } else if (this.snakeDirection[j] == "left" && my.sprite.snakes[j].x < 100) {
+                        this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                        j--;
+                        continue;
+                    } else if (this.snakeDirection[j] == "right" && my.sprite.snakes[j].x > game.config.width - 100) {
+                        this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                        j--;
+                        continue;
+                    } else if (this.snakeDirection[j] == "down" && my.sprite.snakes[j].y > game.config.height - 300) {
+                        this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                        j--;
+                        continue;
+                    } else {
+                        if (this.snakeDirection[j] == "up") {
+                            my.sprite.snakes[j].y -= 5;
+                        } else if (this.snakeDirection[j] == "down") {
+                            my.sprite.snakes[j].y += 5;
+                        } else if (this.snakeDirection[j] == "left") {
+                            my.sprite.snakes[j].x -= 5;
+                        } else {
+                            my.sprite.snakes[j].x += 5;
+                        }
                     }
                 }
             }
-            
-        }
-        
-        for (let bullet of my.sprite.bullet) {
-            if (bullet.visible) {
-                bullet.y -= this.bulletSpeed;
+    
+            if (this.snakeChangeTimer%25 == 0) {
+                for (let j = 0; j < my.sprite.snakes.length; j++) {
+                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)]; 
+                }
             }
+    
+            if (this.aKey.isDown) {
+                if (my.sprite.body.x > (my.sprite.body.displayWidth/2)) {
+                    my.sprite.body.x -= this.playerSpeed;
+                }
+            }
+    
+            if (this.dKey.isDown) {
+                if (my.sprite.body.x < (game.config.width - (my.sprite.body.displayWidth/2))) {
+                    my.sprite.body.x += this.playerSpeed;
+                }
+            }
+    
+            if (this.spaceKey.isDown) {
+                if (this.bulletCooldownCounter < 0) {
+                    for (let bullet of my.sprite.bullet) {
+                        if (!bullet.visible) {
+                            bullet.x = my.sprite.body.x;
+                            bullet.y = my.sprite.body.y - (bullet.displayHeight/2);
+                            bullet.visible = true;
+                            this.bulletCooldownCounter = this.bulletCooldown;
+                            this.playerShoot.play();
+                            break;
+                        }
+                    }
+                }
+                
+            }
+            
+            for (let bullet of my.sprite.bullet) {
+                if (bullet.visible) {
+                    bullet.y -= this.bulletSpeed;
+                }
+                for (let frog of my.sprite.frogs) {
+                    if (frog.visible == true) {
+                        if (this.collides(frog, bullet)) {
+                            bullet.y = -100;
+                            frog.visible = false;
+                            frog.x = -100;
+                            this.enemyHit.play();
+                        }
+                    } 
+                }
+                for (let snake of my.sprite.snakes) {
+                    if (snake.visible == true) {
+                        if (this.collides(snake, bullet)) {
+                            bullet.y = -100;
+                            snake.visible = false;
+                            snake.x = -100;
+                            this.enemyHit.play();
+                        }
+                    } 
+                }
+                
+                if (bullet.y < -(bullet.displayHeight/2)) {
+                    bullet.visible = false;
+                }
+                
+            }
+    
+            for (let poisonSpit of my.sprite.poisonSpit) {
+                if (poisonSpit.visible) {
+                    poisonSpit.y += 20;
+                }
+                if (this.collides(poisonSpit, my.sprite.body)) {
+                    poisonSpit.y = game.config.height + 200;
+                    this.playerHit.play();
+                    this.playerLives -= 1;
+                    my.sprite.lives[this.playerLives].visible = false;
+                }
+                if (poisonSpit.y > (game.config.height + poisonSpit.displayHeight/2)) {
+                    poisonSpit.visible = false;
+                }
+            }
+    
+            for (let i = 0; i < my.sprite.frogs.length; i++) {
+                this.frogCharges[i] -= 1;
+                if (this.frogCharges[i] <= 0 && my.sprite.frogs[i].visible == true){
+                    this.frogCharges[i] = this.enemyFireRate - Math.round(Math.random() * this.enemyFireRate/10);
+                    for (let poisonSpit of my.sprite.poisonSpit) {
+                        if (!poisonSpit.visible) {
+                            poisonSpit.x = my.sprite.frogs[i].x;
+                            poisonSpit.y = my.sprite.frogs[i].y - (poisonSpit.displayHeight/2);
+                            poisonSpit.visible = true;
+                            this.enemyShoot.play();
+                            break;
+                        }
+                    }
+                }
+            }
+    
+            for (let i = 0; i < my.sprite.snakes.length; i++) {
+                this.snakeCharges[i] -= 1;
+                if (this.snakeCharges[i] <= 0 && my.sprite.snakes[i].visible == true){
+                    this.snakeCharges[i] = this.enemyFireRate - Math.round(Math.random() * 20);
+                    for (let poisonSpit of my.sprite.poisonSpit) {
+                        if (!poisonSpit.visible) {
+                            poisonSpit.x = my.sprite.snakes[i].x;
+                            poisonSpit.y = my.sprite.snakes[i].y - (poisonSpit.displayHeight/2);
+                            poisonSpit.visible = true;
+                            this.enemyShoot.play();
+                            break;
+                        }
+                    }
+                }
+            }
+    
+            this.frogsBeaten = true;
             for (let frog of my.sprite.frogs) {
-                if (frog.visible == true) {
-                    if (this.collides(frog, bullet)) {
-                        bullet.y = -100;
-                        frog.visible = false;
-                        frog.x = -100;
-                        this.enemyHit.play();
-                    }
-                } 
+                if (frog.visible) {
+                    this.frogsBeaten = false;
+                }
             }
+    
+            this.snakesBeaten = true;
             for (let snake of my.sprite.snakes) {
-                if (snake.visible == true) {
-                    if (this.collides(snake, bullet)) {
-                        bullet.y = -100;
-                        snake.visible = false;
-                        snake.x = -100;
-                        this.enemyHit.play();
-                    }
-                } 
-            }
-            
-            if (bullet.y < -(bullet.displayHeight/2)) {
-                bullet.visible = false;
-            }
-            
-        }
-
-        for (let poisonSpit of my.sprite.poisonSpit) {
-            if (poisonSpit.visible) {
-                poisonSpit.y += 20;
-            }
-            if (this.collides(poisonSpit, my.sprite.body)) {
-                poisonSpit.y = game.config.height + 200;
-                this.playerHit.play();
-            }
-            if (poisonSpit.y > (game.config.height + poisonSpit.displayHeight/2)) {
-                poisonSpit.visible = false;
-            }
-        }
-
-        for (let i = 0; i < my.sprite.frogs.length; i++) {
-            this.frogCharges[i] -= 1;
-            if (this.frogCharges[i] <= 0 && my.sprite.frogs[i].visible == true){
-                this.frogCharges[i] = this.enemyFireRate - Math.round(Math.random() * this.enemyFireRate/10);
-                for (let poisonSpit of my.sprite.poisonSpit) {
-                    if (!poisonSpit.visible) {
-                        poisonSpit.x = my.sprite.frogs[i].x;
-                        poisonSpit.y = my.sprite.frogs[i].y - (poisonSpit.displayHeight/2);
-                        poisonSpit.visible = true;
-                        this.enemyShoot.play();
-                        break;
-                    }
+                if (snake.visible) {
+                    this.snakesBeaten = false;
                 }
             }
-        }
-
-        for (let i = 0; i < my.sprite.snakes.length; i++) {
-            this.snakeCharges[i] -= 1;
-            if (this.snakeCharges[i] <= 0 && my.sprite.snakes[i].visible == true){
-                this.snakeCharges[i] = this.enemyFireRate - Math.round(Math.random() * 20);
-                for (let poisonSpit of my.sprite.poisonSpit) {
-                    if (!poisonSpit.visible) {
-                        poisonSpit.x = my.sprite.snakes[i].x;
-                        poisonSpit.y = my.sprite.snakes[i].y - (poisonSpit.displayHeight/2);
-                        poisonSpit.visible = true;
-                        this.enemyShoot.play();
-                        break;
-                    }
-                }
+    
+            if (this.frogsBeaten && this.snakesBeaten && !this.gameOver) {
+                this.finishJingle.play();
+                this.gameOver = true;
+            }
+    
+            if (this.playerLives <= 0 && !this.gameOver) {
+                this.finishJingle.play();
+                this.gameOver = true;
             }
         }
 
-        this.frogsBeaten = true;
-        for (let frog of my.sprite.frogs) {
-            if (frog.visible) {
+        if (this.gameOver) {
+            if (this.rKey.isDown) {
+                this.gameOver = false;
                 this.frogsBeaten = false;
-            }
-        }
-
-        this.snakesBeaten = true;
-        for (let snake of my.sprite.snakes) {
-            if (snake.visible) {
                 this.snakesBeaten = false;
+                this.playerLives = 3;
+                this.startRound = true;
             }
         }
-
-        if (this.frogsBeaten && this.snakesBeaten && !this.gameOver) {
-            this.finishJingle.play();
-            this.gameOver = true;
-        }
-
     }
 
     collides(a, b) {
