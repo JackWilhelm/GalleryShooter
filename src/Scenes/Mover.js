@@ -5,9 +5,11 @@ class Movement extends Phaser.Scene {
 
         this.my.sprite.bullet = [];
         this.my.sprite.frogs = [];  
+        this.my.sprite.snakes = [];
         this.maxBullets = 10;           
         this.bulletCooldown = 15;        
         this.bulletCooldownCounter = 0;
+        this.directions = ["up", "down", "left", "right"];
     }
 
     preload() {
@@ -44,6 +46,12 @@ class Movement extends Phaser.Scene {
             my.sprite.frogs[j].visible = false;
         }
 
+        for (let j = 0; j < 2; j++) {
+            my.sprite.snakes.push(this.add.sprite(-100, 100, "snake"));
+            my.sprite.snakes[j].setScale(0.5);
+            my.sprite.snakes[j].visible = false;
+        }
+
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -59,16 +67,19 @@ class Movement extends Phaser.Scene {
 
         this.startRound = true;       
         this.frogHopTimer = 0;
+        this.snakeChangeTimer = 0;
     }
     
     update() {
         let my = this.my;
         this.bulletCooldownCounter--;
         this.frogHopTimer++;
+        this.snakeChangeTimer++;
 
         if (this.startRound == true) {
             this.startRound = false;
-            this.frogHopTimers = 0;
+
+            this.frogHopTimer = 0;
             this.frogMode = [];
             my.sprite.frogs.push(this.add.sprite(-100, 100, "frog"));
             my.sprite.frogs[my.sprite.frogs.length - 1].visible = false;
@@ -84,6 +95,26 @@ class Movement extends Phaser.Scene {
                 }
                 my.sprite.frogs[i].y = (Math.random() * (game.config.height - 400)) + 50;
             }
+
+            this.snakeChangeTimer = 0;
+            this.snakeDirection = [];
+            my.sprite.snakes.push(this.add.sprite(-100, 100, "snake"));
+            my.sprite.snakes[my.sprite.snakes.length - 1].visible = false;
+            my.sprite.snakes[my.sprite.snakes.length - 1].setScale(0.5);
+            for (let i = 0; i < my.sprite.snakes.length; i++) {
+                my.sprite.snakes[i].visible = true;
+                this.snakeDirection[i] = this.directions[Math.round(Math.random()*2)+1];
+                if (this.snakeDirection[i] == "left") {
+                    my.sprite.snakes[i].x = game.config.width - 100;
+                    my.sprite.snakes[i].y = (Math.random() * (game.config.height - 400)) + 100;
+                } else if (this.snakeDirection[i] == "right") {
+                    my.sprite.snakes[i].x = 100;
+                    my.sprite.snakes[i].y = (Math.random() * (game.config.height - 400)) + 100;
+                } else {
+                    my.sprite.snakes[i].x = Math.random() * ((game.config.width - 100) - 100) + 100;
+                    my.sprite.snakes[i].y = 100
+                }
+            }
         }
 
         for (let j = 0; j < my.sprite.frogs.length; j++) {
@@ -91,6 +122,14 @@ class Movement extends Phaser.Scene {
                 my.sprite.frogs[j].x -= Math.max(Math.abs(5 * Math.abs(Math.sin(this.frogHopTimer/10)/2)) - 1, 0) * this.frogMode[j] * 5;
                 if (my.sprite.frogs[j].x < 100 || my.sprite.frogs[j].x > game.config.width - 100) {
                     this.frogMode[j] *= -1;
+                }
+            }
+        }
+
+        for (let j = 0; j < my.sprite.snakes.length; j++) {
+            if (my.sprite.snakes[j].visible) {
+                if (this.snakeDirection[j] == "up" && my.sprite.snakes[j].y < 100) {
+                    
                 }
             }
         }
