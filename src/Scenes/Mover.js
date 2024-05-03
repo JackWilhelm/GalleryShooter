@@ -77,6 +77,7 @@ class Movement extends Phaser.Scene {
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        this.nKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
 
         this.playerSpeed = 10;
         this.bulletSpeed = 25;
@@ -351,6 +352,19 @@ class Movement extends Phaser.Scene {
 
         if (this.gameOver) {
             if (this.rKey.isDown) {
+                this.gameOver = false;
+                this.frogsBeaten = false;
+                this.snakesBeaten = false;
+                this.playerLives = 3;
+                this.startRound = true;
+                while (this.my.sprite.snakes.length > 2) {
+                    this.my.sprite.snakes.pop().destroy(true);
+                }
+                while (this.my.sprite.frogs.length > 2) {
+                    this.my.sprite.frogs.pop().destroy(true);;
+                }
+            }
+            if (this.nKey.isDown && this.frogsBeaten && this.snakesBeaten) {
                 this.gameOver = false;
                 this.frogsBeaten = false;
                 this.snakesBeaten = false;
