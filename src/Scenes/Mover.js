@@ -129,8 +129,38 @@ class Movement extends Phaser.Scene {
         for (let j = 0; j < my.sprite.snakes.length; j++) {
             if (my.sprite.snakes[j].visible) {
                 if (this.snakeDirection[j] == "up" && my.sprite.snakes[j].y < 100) {
-                    
+                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                    j--;
+                    continue;
+                } else if (this.snakeDirection[j] == "left" && my.sprite.snakes[j].x < 100) {
+                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                    j--;
+                    continue;
+                } else if (this.snakeDirection[j] == "right" && my.sprite.snakes[j].x > game.config.width - 100) {
+                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                    j--;
+                    continue;
+                } else if (this.snakeDirection[j] == "down" && my.sprite.snakes[j].y > game.config.height - 300) {
+                    this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)];
+                    j--;
+                    continue;
+                } else {
+                    if (this.snakeDirection[j] == "up") {
+                        my.sprite.snakes[j].y -= 5;
+                    } else if (this.snakeDirection[j] == "down") {
+                        my.sprite.snakes[j].y += 5;
+                    } else if (this.snakeDirection[j] == "left") {
+                        my.sprite.snakes[j].x -= 5;
+                    } else {
+                        my.sprite.snakes[j].x += 5;
+                    }
                 }
+            }
+        }
+
+        if (this.snakeChangeTimer%25 == 0) {
+            for (let j = 0; j < my.sprite.snakes.length; j++) {
+                this.snakeDirection[j] = this.directions[Math.round(Math.random()*3)]; 
             }
         }
 
