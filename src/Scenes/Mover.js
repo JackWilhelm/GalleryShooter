@@ -380,16 +380,22 @@ class Movement extends Phaser.Scene {
                 this.gameOver = true;
                 this.playerScore += 300;
                 this.score.setText("Score: " + this.playerScore);
+                this.gameOverText = this.add.text(game.config.width/2, game.config.height/2, "You Win!\nScore:\n" + this.playerScore, 'Default').setOrigin(0.5).setScale(3);
+                this.gameOverText.visible = true;
+
             }
     
             if (this.playerLives <= 0 && !this.gameOver) {
                 this.finishJingle.play();
                 this.gameOver = true;
+                this.gameOverText = this.add.text(game.config.width/2, game.config.height/2, "You lose!\nFinalScore:\n" + this.playerScore, 'Default').setOrigin(0.5).setScale(3);
+                this.gameOverText.visible = true;
             }
         }
 
         if (this.gameOver) {
             if (this.rKey.isDown) {
+                this.gameOverText.visible = false;
                 this.gameOver = false;
                 this.frogsBeaten = false;
                 this.snakesBeaten = false;
@@ -409,6 +415,7 @@ class Movement extends Phaser.Scene {
                 }
             }
             if (this.nKey.isDown && this.frogsBeaten && this.snakesBeaten) {
+                this.gameOverText.visible = false;
                 this.gameOver = false;
                 this.frogsBeaten = false;
                 this.snakesBeaten = false;
