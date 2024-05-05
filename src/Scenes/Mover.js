@@ -36,6 +36,11 @@ class Movement extends Phaser.Scene {
         this.load.audio("enemyShoot", "impactPlate_light_000.ogg");
         this.load.audio("enemyHit", "impactWood_medium_000.ogg");
         this.load.audio("finishJingle", "jingles_STEEL02.ogg");
+
+        this.load.image("whitePuff00", "whitePuff00.png");
+        this.load.image("whitePuff01", "whitePuff01.png");
+        this.load.image("whitePuff02", "whitePuff02.png");
+        this.load.image("whitePuff03", "whitePuff03.png");
     }
 
     create() {
@@ -93,9 +98,24 @@ class Movement extends Phaser.Scene {
         this.frogHopTimer = 0;
         this.snakeChangeTimer = 0;
 
-        document.getElementById('description').innerHTML = '<h2>Snakes And Frogs</h2><br>A: left // D: right // Space: shoot // S: Next Scene // R: Restart // N: Next Stage'
+        document.getElementById('description').innerHTML = '<h2>Snakes And Frogs</h2><br>A: left // D: right // Space: shoot // R: Restart // N: Next Stage'
 
-        this.score = this.add.text(game.config.width/2, 100, this.playerScore, 'Default');
+        this.score = this.add.text(game.config.width/2, 100, "Score: " + this.playerScore, 'Default').setOrigin(0.5);
+        this.score.setScale(3);
+        this.score.setDepth(10000);
+
+        this.anims.create({
+            key: "puff",
+            frames: [
+                { key: "whitePuff00" },
+                { key: "whitePuff01" },
+                { key: "whitePuff02" },
+                { key: "whitePuff03" },
+            ],
+            frameRate: 20,    // Note: case sensitive (thank you Ivy!)
+            repeat: 5,
+            hideOnComplete: true
+        });
     }
     
     update() {
@@ -265,10 +285,11 @@ class Movement extends Phaser.Scene {
                         if (this.collides(frog, bullet)) {
                             bullet.y = -100;
                             frog.visible = false;
+                            this.puff = this.add.sprite(frog.x, frog.y, "whitePuff03").setScale(0.25).play("puff");
                             frog.x = -100;
                             this.enemyHit.play();
                             this.playerScore += 25;
-                            this.score.setText(this.playerScore);
+                            this.score.setText("Score: " + this.playerScore);
                         }
                     } 
                 }
@@ -277,10 +298,11 @@ class Movement extends Phaser.Scene {
                         if (this.collides(snake, bullet)) {
                             bullet.y = -100;
                             snake.visible = false;
+                            this.puff = this.add.sprite(snake.x, snake.y, "whitePuff03").setScale(0.25).play("puff");
                             snake.x = -100;
                             this.enemyHit.play();
                             this.playerScore += 50;
-                            this.score.setText(this.playerScore);
+                            this.score.setText("Score: " + this.playerScore);
                         }
                     } 
                 }
@@ -300,6 +322,7 @@ class Movement extends Phaser.Scene {
                     this.playerHit.play();
                     this.playerLives -= 1;
                     my.sprite.lives[this.playerLives].visible = false;
+                    this.puff = this.add.sprite(my.sprite.body.x, my.sprite.body.y, "whitePuff03").setScale(0.25).play("puff");
                 }
                 if (poisonSpit.y > (game.config.height + poisonSpit.displayHeight/2)) {
                     poisonSpit.visible = false;
@@ -356,7 +379,7 @@ class Movement extends Phaser.Scene {
                 this.finishJingle.play();
                 this.gameOver = true;
                 this.playerScore += 300;
-                this.score.setText(this.playerScore);
+                this.score.setText("Score: " + this.playerScore);
             }
     
             if (this.playerLives <= 0 && !this.gameOver) {
@@ -379,7 +402,11 @@ class Movement extends Phaser.Scene {
                     this.my.sprite.frogs.pop().destroy(true);;
                 }
                 this.playerScore = 0;
-                this.score.setText(this.playerScore);
+                this.score.setText("Score: " + this.playerScore);
+                for (let poisonSpit of this.my.sprite.poisonSpit) {
+                    poisonSpit.y = game.config.height + 200;
+                    poisonSpit.visible = false;
+                }
             }
             if (this.nKey.isDown && this.frogsBeaten && this.snakesBeaten) {
                 this.gameOver = false;
@@ -387,6 +414,14 @@ class Movement extends Phaser.Scene {
                 this.snakesBeaten = false;
                 this.playerLives = 3;
                 this.startRound = true;
+                for (let poisonSpit of this.my.sprite.poisonSpit) {
+                    poisonSpit.y = game.config.height + 200;
+                    poisonSpit.visible = false;
+                }
+                for (let bullet of this.my.sprite.bullet) {
+                    bullet.y = -100;
+                    bullet.visible = false;
+                }
             }
         }
     }
